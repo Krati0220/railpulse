@@ -1,0 +1,122 @@
+Recorded report run with a live model in the classifier slot.
+=============================================================
+
+Provider : openai (gpt-4.1-mini)
+Recorded : 2026-08-25, at commit 1b77124
+Command  : OPENAI_API_KEY=... python -m app.sim.report
+
+WHY THIS FILE EXISTS
+--------------------
+The README quotes one figure it cannot regenerate on every build, because
+generating it costs an API call per phrasing: the classifier's accuracy on
+24 phrasings that appear nowhere in the simulator. That figure is the whole
+case for using a model rather than a lookup table, so the run it came from is
+committed here instead of being asserted.
+
+WHAT IS STILL VALID, AND WHAT IS NOT
+------------------------------------
+VALID -- the section "CLASSIFIER - phrasings absent from the simulator".
+  24 cases, 24 model calls, 24 accepted, 22 correct (91.7%), 0 dangerous
+  confusions. app/classifier.py and app/sim/classifier_eval.py have not been
+  modified since commit 1b77124, so this is the same measurement the code
+  would make today:
+
+      git log --oneline app/classifier.py app/sim/classifier_eval.py
+
+SUPERSEDED -- everything else below.
+  The policy tables are single-seed point estimates from the old harness, and
+  every one of their numbers has since moved for two independent reasons: the
+  natural-recovery hazard leaked with polling cadence (the do-nothing anchor
+  shown here as 21.6% is a polling artefact), and unclassified failures now
+  route to a human instead of falling through to a retry. The current figures
+  are twelve-seed means with confidence intervals; run the report.
+
+  The in-world classifier section is also misleading as a *model* result:
+  'model_calls': 0 means the lookup and an unreported cache answered all of
+  it. Reporting cache hits separately is what commit 1b77124 fixed.
+
+Kept verbatim below, unedited, including the parts that are wrong.
+
+=============================================================
+
+
+RailPulse — measured recovery
+=============================
+classifier provider : openai
+cases per world     : 500   seed: 7
+
+Both policies and baselines face the identical world for a given seed.
+The world's recovery function is latent: no policy can read when a
+customer becomes solvent or when an outage clears, only act and observe.
+
+DEFAULT WORLD
+=============
+policy                       net recovered  rec. rate   att/rec  contacts/rec  opt-outs
+---------------------------------------------------------------------------------------
+do-nothing                        ₹261,633     21.6%      0.00          0.00         0
+retry-3x-immediate                ₹482,749     39.0%      7.17          0.00         0
+retry-3x-backoff                  ₹588,296     48.0%      5.50          0.00         0
+static-dunning                    ₹608,269     47.4%      2.11          5.86       223
+railpulse (no classifier)         ₹602,819     49.6%      4.44          0.43         0
+railpulse + classifier            ₹672,230     52.4%      2.49          0.81         0
+
+HELD-OUT WORLD (shifted parameters, never tuned against)
+========================================================
+policy                       net recovered  rec. rate   att/rec  contacts/rec  opt-outs
+---------------------------------------------------------------------------------------
+do-nothing                        ₹289,851     23.6%      0.00          0.00         0
+retry-3x-immediate                ₹464,718     34.6%      8.25          0.00         0
+retry-3x-backoff                  ₹551,704     43.2%      6.25          0.00         0
+static-dunning                    ₹362,582     28.6%      3.50          9.07       323
+railpulse (no classifier)         ₹519,718     42.0%      4.67          0.79         0
+railpulse + classifier            ₹590,329     46.8%      1.90          1.26         0
+
+CLASSIFIER — in-world messages
+==============================
+cases                : 500
+answered (coverage)  : 499  (99.8%)
+correct / answered   : 499  (100.0%)
+correct / all cases  : 99.8%
+dangerous confusions : 0
+
+per true cause        correct/seen
+  do_not_honour          74/74    100.0%
+  instrument_dead        54/54    100.0%
+  insufficient_funds    171/171   100.0%
+  issuer_outage          85/85    100.0%
+  mandate_cancelled      25/25    100.0%
+  risk_blocked           21/22     95.5%
+  technical_decline      69/69    100.0%
+
+provider stats       : {'lookup_hits': 165, 'model_calls': 0, 'model_accepted': 0, 'model_rejected': 0, 'low_confidence': 0, 'provider_errors': 0, 'acceptance_rate': 0.0}
+
+CLASSIFIER — phrasings absent from the simulator
+================================================
+The number that matters. The keyword floor is a lookup written against
+the strings the simulator emits, so its in-world score is close to
+meaningless. Generalising to text nobody wrote a rule for is the job.
+
+cases                : 24
+answered (coverage)  : 24  (100.0%)
+correct / answered   : 22  (91.7%)
+correct / all cases  : 91.7%
+dangerous confusions : 0
+
+per true cause        correct/seen
+  do_not_honour           3/3     100.0%
+  instrument_dead         3/4      75.0%
+  insufficient_funds      4/4     100.0%
+  issuer_outage           4/4     100.0%
+  mandate_cancelled       2/3      66.7%
+  risk_blocked            3/3     100.0%
+  technical_decline       3/3     100.0%
+
+provider stats       : {'lookup_hits': 0, 'model_calls': 24, 'model_accepted': 24, 'model_rejected': 0, 'low_confidence': 0, 'provider_errors': 0, 'acceptance_rate': 1.0}
+
+HONESTY NOTE
+============
+These are synthetic worlds, not merchant data. The claim is a
+controlled comparison between policies under identical conditions --
+not a forecast of real recovery for any merchant. Retry pricing is a
+flat per-attempt fee and does not model card-scheme excessive-retry
+penalties, which would penalise the retry-heavy baselines further.

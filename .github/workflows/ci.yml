@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e '.[dev]'
+
+      - name: Lint
+        run: ruff check app tests
+
+      # Coverage is on because it changes thread scheduling. A redelivery-storm
+      # race in the store only reproduced under coverage, roughly one run in
+      # three, and passed cleanly without it.
+      - name: Test
+        run: pytest -q --cov=app --cov-report=term-missing
+
+  concurrency-soak:
+    # The store's idempotency guarantees are the ones worth re-running: a race
+    # that fails one run in three is green two times out of three, and a single
+    # CI run is not evidence.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e '.[dev]'
+      - name: Repeat concurrency and release tests
+        run: |
+          for i in $(seq 1 10); do
+            echo "--- soak run $i ---"
+            pytest tests/test_concurrency.py tests/test_release_control.py \
+                   tests/test_store.py -q --cov=app > /dev/null || exit 1
+          done
+          echo "10/10 clean"

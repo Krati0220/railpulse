@@ -1,0 +1,721 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RailPulse — Revenue Recovery</title>
+    <style>
+      :root {
+        --ink: #eef3ff;
+        --muted: #a3afca;
+        --faint: #7f8db0;
+        --panel: #121b33;
+        --panel-2: #0f1730;
+        --line: #2a385d;
+        --line-soft: #243152;
+        --blue: #78a7ff;
+        --mint: #77e2bb;
+        --amber: #f7c55d;
+        --red: #ff8c9f;
+        --radius: 16px;
+        --shadow: 0 10px 30px #2d55ad40;
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+        color: var(--ink);
+        background: radial-gradient(circle at 15% 0, #1b315f 0, transparent 33%), #070b17;
+        min-height: 100vh;
+        -webkit-font-smoothing: antialiased;
+      }
+      main { max-width: 1240px; margin: 0 auto; padding: 48px 28px 80px; }
+
+      /* ---------------------------------------------------------- hero */
+      .eyebrow { color: var(--mint); text-transform: uppercase; letter-spacing: .14em; font-size: .72rem; font-weight: 800; }
+      h1 { font-size: clamp(2.2rem, 5vw, 4.4rem); margin: 9px 0 12px; letter-spacing: -.06em; line-height: .95; }
+      .lead { max-width: 640px; color: var(--muted); font-size: 1.05rem; line-height: 1.65; margin: 0; }
+      .hero { display: flex; gap: 28px; justify-content: space-between; align-items: flex-end; margin-bottom: 32px; flex-wrap: wrap; }
+      .controls { display: grid; gap: 10px; justify-items: stretch; min-width: 270px; }
+
+      button {
+        border: 0; background: linear-gradient(135deg, #8ab2ff, #5f84ff); color: #07132e;
+        padding: 13px 17px; border-radius: 11px; font-weight: 800; font-size: .87rem;
+        cursor: pointer; white-space: nowrap; box-shadow: var(--shadow); font-family: inherit;
+        transition: transform .12s ease, filter .12s ease;
+      }
+      button:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.06); }
+      button:active:not(:disabled) { transform: translateY(0); }
+      button:disabled { cursor: not-allowed; opacity: .45; box-shadow: none; }
+      .secondary { background: transparent; border: 1px solid #668fe0; color: #c8d9ff; box-shadow: none; padding: 11px 15px; }
+      .secondary:hover:not(:disabled) { background: #16224180; }
+      :focus-visible { outline: 2px solid var(--mint); outline-offset: 2px; border-radius: 6px; }
+
+      .toggle-row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+      .toggle { color: var(--muted); font-size: .75rem; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; user-select: none; }
+      .toggle input { accent-color: var(--blue); width: 15px; height: 15px; cursor: pointer; }
+      .status { color: var(--muted); font-size: .78rem; min-height: 1.1rem; line-height: 1.45; }
+      .status.error { color: var(--red); }
+
+      .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--mint); display: inline-block; margin-right: 6px; }
+      .live-dot.paused { background: var(--faint); }
+      .live-dot.live { animation: pulse 2s ease-in-out infinite; }
+      @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+      @media (prefers-reduced-motion: reduce) { .live-dot.live { animation: none; } button:hover:not(:disabled) { transform: none; } }
+
+      /* ------------------------------------------------------- banners */
+      .banner {
+        display: none; align-items: flex-start; gap: 11px; padding: 13px 16px; border-radius: 12px;
+        font-size: .84rem; line-height: 1.5; margin-bottom: 18px; border: 1px solid;
+      }
+      .banner.show { display: flex; }
+      .banner.warn { background: #3a2c11; border-color: #6b5320; color: #ffdf9e; }
+      .banner.bad { background: #3a1c28; border-color: #6d2f43; color: #ffc2cd; }
+      .banner strong { display: block; margin-bottom: 2px; }
+      .banner.lock { background: #12243a; border-color: #2b4569; color: #cfe4ff; }
+      .unlock { display: flex; gap: 9px; align-items: center; margin-top: 9px; flex-wrap: wrap; }
+      .unlock input {
+        background: #0b1420; border: 1px solid #2b4569; border-radius: 8px; color: #e8f0fa;
+        padding: 7px 10px; font: inherit; font-size: .82rem; min-width: 260px;
+      }
+      .unlock input:focus { outline: 2px solid var(--blue); outline-offset: 1px; }
+
+      /* ------------------------------------------------------- metrics */
+      .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: 14px; margin-bottom: 22px; }
+      .card, .panel { background: linear-gradient(145deg, #16213d, var(--panel-2)); border: 1px solid var(--line); border-radius: var(--radius); }
+      .card { padding: 17px 18px; }
+      .card label { display: block; color: var(--muted); font-size: .76rem; margin-bottom: 8px; }
+      .card strong { font-size: 1.65rem; letter-spacing: -.04em; display: block; font-variant-numeric: tabular-nums; }
+      .card .sub { color: var(--faint); font-size: .7rem; margin-top: 4px; display: block; }
+      .card.accent strong { color: var(--mint); }
+      .card.warn strong { color: var(--amber); }
+
+      /* -------------------------------------------------------- layout */
+      .layout { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, .85fr); gap: 18px; align-items: start; }
+      .side-stack { display: grid; gap: 18px; align-content: start; position: sticky; top: 18px; }
+      .panel { overflow: hidden; }
+      .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 15px 20px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+      .panel h2 { font-size: .92rem; letter-spacing: .01em; margin: 0; font-weight: 700; }
+      .panel-head .hint { color: var(--faint); font-size: .72rem; }
+
+      .filters { display: flex; gap: 6px; flex-wrap: wrap; padding: 12px 20px; border-bottom: 1px solid var(--line-soft); }
+      .chip {
+        background: #1a2748; border: 1px solid var(--line-soft); color: var(--muted); font-size: .71rem;
+        font-weight: 700; padding: 5px 10px; border-radius: 999px; cursor: pointer; font-family: inherit;
+        box-shadow: none; transition: none;
+      }
+      .chip[aria-pressed="true"] { background: #2c437c; border-color: #4a6bb5; color: #dce8ff; }
+      .chip:hover { transform: none; filter: none; }
+
+      .table-scroll { overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; font-size: .83rem; min-width: 600px; }
+      th { color: var(--muted); font-weight: 600; font-size: .69rem; text-align: left; text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; }
+      th, td { padding: 12px 9px; border-bottom: 1px solid var(--line-soft); text-align: left; }
+      th:first-child, td:first-child { padding-left: 16px; }
+      th:last-child, td:last-child { padding-right: 16px; text-align: right; }
+      td.rail { white-space: nowrap; color: var(--muted); font-size: .79rem; }
+      td.failure { font-size: .78rem; }
+      tbody tr { cursor: pointer; transition: background .12s ease; }
+      tbody tr:hover, tbody tr:focus-visible { background: #1a2748; }
+      tbody tr[aria-selected="true"] { background: #22335f; }
+      tr:last-child td { border-bottom: 0; }
+      td.num { font-variant-numeric: tabular-nums; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .76rem; white-space: nowrap; }
+
+      .pill { display: inline-block; padding: 4px 9px; border-radius: 999px; font-size: .69rem; font-weight: 800; background: #233457; color: #c6d8ff; white-space: nowrap; }
+      .pill.recovered_natural, .pill.recovered_by_link { background: #123e37; color: var(--mint); }
+      .pill.authorized_pending_capture, .pill.cooldown { background: #4b3c18; color: var(--amber); }
+      .pill.manual_review, .pill.stopped { background: #442334; color: #ffafbc; }
+      .pill.link_sent, .pill.consent_required { background: #1e3566; color: #9ec2ff; }
+      .flag { color: var(--amber); font-size: .68rem; font-weight: 700; margin-left: 6px; }
+
+      .timeline { padding: 17px 20px; color: var(--muted); line-height: 1.6; font-size: .88rem; min-height: 150px; }
+      .timeline div { border-left: 2px solid #36558d; padding: 0 0 13px 13px; }
+      .timeline div:last-child { padding-bottom: 0; }
+
+      .preview { padding: 17px 20px; color: var(--muted); font-size: .84rem; line-height: 1.55; min-height: 160px; }
+      .preview .message { background: #0a1125; border: 1px solid #2a3d68; border-radius: 9px; color: #e7efff; padding: 12px; white-space: pre-wrap; margin: 10px 0; font-size: .84rem; }
+      .check-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+      .check { color: var(--mint); background: #123e37; border-radius: 999px; font-size: .67rem; font-weight: 700; padding: 4px 8px; }
+      .blocked { color: #ffafbc; background: #442334; }
+
+      .empty { padding: 34px 20px; color: var(--muted); text-align: center; font-size: .88rem; }
+      .empty span { display: block; color: var(--faint); font-size: .78rem; margin-top: 6px; }
+
+      .skeleton { height: 13px; border-radius: 6px; background: linear-gradient(90deg, #1a2646, #223260, #1a2646); background-size: 200% 100%; animation: shimmer 1.3s linear infinite; }
+      @keyframes shimmer { to { background-position: -200% 0; } }
+      @media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
+
+      .detail { padding: 15px 20px; font-size: .82rem; color: var(--muted); line-height: 1.55; }
+      .detail dl { display: grid; grid-template-columns: auto 1fr; gap: 5px 14px; margin: 0 0 12px; }
+      .detail dt { color: var(--faint); font-size: .74rem; }
+      .detail dd { margin: 0; color: var(--ink); font-size: .8rem; word-break: break-word; }
+      .action-row { border-left: 2px solid #36558d; padding: 0 0 11px 12px; }
+      .action-row:last-child { padding-bottom: 0; }
+      .action-row b { color: var(--ink); font-weight: 700; }
+      .tag { font-size: .66rem; font-weight: 800; padding: 2px 7px; border-radius: 999px; background: #233457; color: #c6d8ff; margin-left: 6px; }
+      .tag.succeeded { background: #123e37; color: var(--mint); }
+      .tag.failed { background: #442334; color: #ffafbc; }
+      .tag.superseded { background: #4b3c18; color: var(--amber); }
+
+      .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+      @media (max-width: 980px) {
+        .layout { grid-template-columns: 1fr; }
+        .side-stack { position: static; }
+      }
+      @media (max-width: 700px) {
+        main { padding: 30px 16px 60px; }
+        .hero { display: block; }
+        .controls { margin-top: 20px; min-width: 0; }
+        .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .panel { margin-bottom: 4px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="hero">
+        <div>
+          <div class="eyebrow">Consent-aware recovery state engine</div>
+          <h1>RailPulse</h1>
+          <p class="lead">
+            A guarded lifecycle engine for failed recurring payments. It knows when to wait,
+            recover with consent, or deliberately do nothing.
+          </p>
+        </div>
+        <div class="controls">
+          <button id="raceDemo">Run late-authorisation demo</button>
+          <button class="secondary" id="outreachDemo">Preview guarded outreach</button>
+          <button class="secondary" id="outreachBlockedDemo">Try a non-compliant draft</button>
+          <button class="secondary" id="dispatchNow">Dispatch due actions</button>
+          <div class="toggle-row">
+            <label class="toggle"><input type="checkbox" id="liveToggle" checked /> Live updates</label>
+            <label class="toggle"><input type="checkbox" id="aiToggle" checked /> AI preview</label>
+          </div>
+          <div class="status" id="status" role="status" aria-live="polite">
+            <span class="live-dot live" id="liveDot"></span><span id="statusText">Connecting…</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="banner lock" id="lockBanner">
+        <div>
+          <strong>This RailPulse is running with an operator token</strong>
+          <span>/cases, /overview and /actions/dispatch return invoice amounts and live
+          payment-link URLs, so they are behind a shared secret. Paste it to continue. It is
+          held in this tab only and is gone when you reload.</span>
+          <form class="unlock" id="unlockForm">
+            <input id="operatorToken" type="password" autocomplete="off" spellcheck="false"
+                   placeholder="RAILPULSE_OPERATOR_TOKEN" aria-label="Operator token" />
+            <button type="submit">Unlock</button>
+          </form>
+        </div>
+      </div>
+      <div class="banner bad" id="errorBanner" role="alert">
+        <div><strong>Cannot reach the RailPulse API</strong><span id="errorText"></span></div>
+      </div>
+      <div class="banner warn" id="degradedBanner">
+        <div><strong>Observed rail degradation</strong><span id="degradedText"></span></div>
+      </div>
+
+      <section class="metrics" id="metrics">
+        <div class="card"><label>Recovery cases</label><strong id="total">—</strong><span class="sub" id="totalSub">&nbsp;</span></div>
+        <div class="card accent"><label>Recovered</label><strong id="recovered">—</strong><span class="sub" id="recoveredSub">&nbsp;</span></div>
+        <div class="card accent"><label>Recovered value</label><strong id="value">—</strong><span class="sub">natural + by link</span></div>
+        <div class="card warn"><label>Awaiting capture</label><strong id="awaiting">—</strong><span class="sub">outreach suppressed</span></div>
+        <div class="card"><label>Links sent</label><strong id="linksSent">—</strong><span class="sub" id="consentSub">&nbsp;</span></div>
+        <div class="card warn"><label>Manual review</label><strong id="review">—</strong><span class="sub">needs a human</span></div>
+      </section>
+
+      <section class="layout">
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Recovery case ledger</h2>
+            <span class="hint" id="ledgerHint">Select a row for its audit trail</span>
+          </div>
+          <div class="filters" id="filters" role="group" aria-label="Filter cases by state"></div>
+          <div class="table-scroll">
+            <table>
+              <caption class="visually-hidden">Recovery cases with rail, failure, state and link status</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Case</th>
+                  <th scope="col">Rail / issuer</th>
+                  <th scope="col">Failure</th>
+                  <th scope="col">State</th>
+                  <th scope="col">Link</th>
+                  <th scope="col">Contacts</th>
+                </tr>
+              </thead>
+              <tbody id="caseRows"></tbody>
+            </table>
+          </div>
+          <div class="empty" id="empty">
+            No recovery cases yet.
+            <span>Run the late-authorisation demo to see the guarded flow end to end.</span>
+          </div>
+        </article>
+
+        <div class="side-stack">
+          <aside class="panel">
+            <div class="panel-head"><h2 id="detailTitle">Case detail</h2></div>
+            <div class="detail" id="detail">Select a case in the ledger to inspect its durable action trail.</div>
+          </aside>
+          <aside class="panel">
+            <div class="panel-head"><h2>Latest guarded flow</h2></div>
+            <div class="timeline" id="timeline"><div>Waiting for a simulation.</div></div>
+          </aside>
+          <aside class="panel">
+            <div class="panel-head"><h2>AI outreach preview &amp; policy validator</h2></div>
+            <div class="preview" id="outreachPreview">
+              Preview-only. RailPulse will never send a WhatsApp or SMS message from this dashboard.
+            </div>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      "use strict";
+
+      const POLL_MS = 5000;
+      const STATE_FILTERS = [
+        ["all", "All"],
+        ["consent_required", "Consent"],
+        ["link_sent", "Link sent"],
+        ["authorized_pending_capture", "Awaiting capture"],
+        ["cooldown", "Cooldown"],
+        ["retry_scheduled", "Retry"],
+        ["manual_review", "Manual review"],
+        ["stopped", "Stopped"],
+      ];
+
+      const state = {
+        cases: [],
+        filter: "all",
+        selectedId: null,
+        live: true,
+        timer: null,
+        loaded: false,
+        inFlight: false,
+        // Kept in memory for the life of the tab, never in localStorage: it is
+        // a bearer secret for endpoints that return other bearer secrets, and
+        // a reload asking again is the correct amount of friction.
+        operatorToken: null,
+        locked: false,
+      };
+
+      const $ = (id) => document.getElementById(id);
+      const rupees = (paise) =>
+        new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 })
+          .format((paise || 0) / 100);
+      const label = (value) => String(value || "").replaceAll("_", " ");
+      const escapeHtml = (value) =>
+        String(value ?? "").replace(/[&<>"']/g, (character) =>
+          ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[character]));
+
+      function relativeTime(iso) {
+        if (!iso) return "—";
+        const delta = Date.now() - new Date(iso).getTime();
+        if (Number.isNaN(delta)) return "—";
+        const minutes = Math.round(delta / 60000);
+        if (minutes < 1) return "just now";
+        if (minutes < 60) return `${minutes}m ago`;
+        const hours = Math.round(minutes / 60);
+        if (hours < 24) return `${hours}h ago`;
+        return `${Math.round(hours / 24)}d ago`;
+      }
+
+      function setStatus(message, isError) {
+        $("statusText").textContent = message;
+        $("status").classList.toggle("error", Boolean(isError));
+      }
+
+      function showError(message) {
+        $("errorText").textContent = ` ${message}`;
+        $("errorBanner").classList.add("show");
+      }
+
+      function clearError() {
+        $("errorBanner").classList.remove("show");
+      }
+
+      async function requestJson(url, options) {
+        const settings = Object.assign({}, options);
+        if (state.operatorToken) {
+          settings.headers = Object.assign({}, settings.headers, {
+            Authorization: `Bearer ${state.operatorToken}`,
+          });
+        }
+        const response = await fetch(url, settings);
+        let payload = null;
+        try {
+          payload = await response.json();
+        } catch (_) {
+          payload = null;
+        }
+        if (response.status === 401) {
+          // The token is wrong, or the server started requiring one after this
+          // tab loaded. Either way the answer is to ask, not to show the
+          // operator a bare "HTTP 401" against every panel on the page.
+          state.operatorToken = null;
+          lock(payload && payload.detail ? String(payload.detail) : "Operator token rejected.");
+          const rejected = new Error("operator token required");
+          rejected.unauthorized = true;
+          throw rejected;
+        }
+        if (!response.ok) {
+          const detail = payload && payload.detail ? payload.detail : `HTTP ${response.status}`;
+          throw new Error(typeof detail === "string" ? detail : `HTTP ${response.status}`);
+        }
+        return payload;
+      }
+
+      function lock(message) {
+        state.locked = true;
+        $("lockBanner").classList.add("show");
+        clearError();
+        setStatus(message || "Operator token required.", true);
+        const field = $("operatorToken");
+        field.value = "";
+        field.focus();
+      }
+
+      function unlock() {
+        state.locked = false;
+        $("lockBanner").classList.remove("show");
+      }
+
+      // ------------------------------------------------------------ rendering
+
+      function renderFilters() {
+        $("filters").innerHTML = STATE_FILTERS.map(([value, text]) => {
+          const count = value === "all"
+            ? state.cases.length
+            : state.cases.filter((item) => item.state === value).length;
+          const suffix = count ? ` ${count}` : "";
+          return `<button class="chip" type="button" data-filter="${value}"
+                    aria-pressed="${state.filter === value}">${escapeHtml(text)}${suffix}</button>`;
+        }).join("");
+      }
+
+      function visibleCases() {
+        return state.filter === "all"
+          ? state.cases
+          : state.cases.filter((item) => item.state === state.filter);
+      }
+
+      function renderTable() {
+        const rows = visibleCases();
+        const body = $("caseRows");
+        body.innerHTML = rows.map((item) => {
+          const flag = item.requires_manual_reconciliation
+            ? '<span class="flag" title="Requires manual reconciliation">⚑</span>'
+            : "";
+          return `<tr tabindex="0" data-case="${escapeHtml(item.id)}"
+                    aria-selected="${state.selectedId === item.id}">
+            <td class="mono">${escapeHtml(item.logical_key.slice(-14))}${flag}</td>
+            <td class="rail">${escapeHtml(label(item.rail))} / ${escapeHtml(item.issuer)}</td>
+            <td class="failure">${escapeHtml(item.failure_code || "—")}</td>
+            <td><span class="pill ${escapeHtml(item.state)}">${escapeHtml(label(item.state))}</span></td>
+            <td class="rail">${escapeHtml(item.payment_link_status || "—")}</td>
+            <td class="num">${item.contacts_used}/${item.max_contacts}</td>
+          </tr>`;
+        }).join("");
+
+        const empty = $("empty");
+        if (rows.length) {
+          empty.style.display = "none";
+        } else {
+          empty.style.display = "block";
+          empty.innerHTML = state.cases.length
+            ? `No cases in <strong>${escapeHtml(label(state.filter))}</strong>.<span>Clear the filter to see all ${state.cases.length} cases.</span>`
+            : "No recovery cases yet.<span>Run the late-authorisation demo to see the guarded flow end to end.</span>";
+        }
+      }
+
+      function renderMetrics(data) {
+        const metrics = data.metrics;
+        $("total").textContent = data.total_cases;
+        $("totalSub").textContent = metrics.stopped ? `${metrics.stopped} stopped by policy` : " ";
+        $("recovered").textContent = metrics.recovered_cases;
+        const rate = data.total_cases ? Math.round((metrics.recovered_cases / data.total_cases) * 100) : 0;
+        $("recoveredSub").textContent = data.total_cases ? `${rate}% of all cases` : " ";
+        $("value").textContent = rupees(metrics.recovered_amount_paise);
+        $("awaiting").textContent = metrics.awaiting_capture;
+        $("linksSent").textContent = metrics.links_sent;
+        $("consentSub").textContent = metrics.pending_consent
+          ? `${metrics.pending_consent} awaiting dispatch`
+          : " ";
+        $("review").textContent = metrics.manual_review;
+
+        const degraded = data.degraded_rails || [];
+        const banner = $("degradedBanner");
+        if (degraded.length) {
+          $("degradedText").textContent = ` ${degraded
+            .map((item) => `${item.issuer}/${label(item.rail)} at ${Math.round(item.success_rate * 100)}% over ${item.attempts} attempts`)
+            .join(", ")}. New recovery on these rails is held in cooldown.`;
+          banner.classList.add("show");
+        } else {
+          banner.classList.remove("show");
+        }
+      }
+
+      function renderDetail() {
+        const target = state.cases.find((item) => item.id === state.selectedId);
+        const container = $("detail");
+        if (!target) {
+          $("detailTitle").textContent = "Case detail";
+          container.textContent = "Select a case in the ledger to inspect its durable action trail.";
+          return;
+        }
+        $("detailTitle").textContent = `Case ${target.logical_key.slice(-18)}`;
+        container.innerHTML = `
+          <dl>
+            <dt>State</dt><dd><span class="pill ${escapeHtml(target.state)}">${escapeHtml(label(target.state))}</span></dd>
+            <dt>Amount</dt><dd>${escapeHtml(rupees(target.amount_paise))}</dd>
+            <dt>Failure</dt><dd>${escapeHtml(target.failure_code || "—")} (${escapeHtml(label(target.failure_class) || "unclassified")})</dd>
+            <dt>Attempts</dt><dd>${target.attempt_count}</dd>
+            <dt>Contacts</dt><dd>${target.contacts_used} of ${target.max_contacts} in 7 days</dd>
+            <dt>Next action</dt><dd>${target.next_action_at ? escapeHtml(new Date(target.next_action_at).toLocaleString()) : "none scheduled"}</dd>
+            <dt>Updated</dt><dd>${escapeHtml(relativeTime(target.updated_at))}</dd>
+            ${target.stop_reason ? `<dt>Reason</dt><dd>${escapeHtml(label(target.stop_reason))}</dd>` : ""}
+          </dl>
+          <div id="actionTrail"><div class="skeleton" style="width:70%"></div></div>`;
+        loadActions(target.id);
+      }
+
+      async function loadActions(caseId) {
+        try {
+          const actions = await requestJson(`/cases/${encodeURIComponent(caseId)}/actions`);
+          const trail = document.getElementById("actionTrail");
+          if (!trail || state.selectedId !== caseId) return;
+          trail.innerHTML = actions.length
+            ? actions.map((action) => `
+                <div class="action-row">
+                  <b>${escapeHtml(action.action_type)}</b><span class="tag ${escapeHtml(action.status)}">${escapeHtml(action.status)}</span>
+                  <div style="font-size:.74rem;margin-top:3px">${escapeHtml(relativeTime(action.created_at))}${
+                    action.metadata && action.metadata.payment_link_id
+                      ? ` · ${escapeHtml(action.metadata.payment_link_id)}` : ""}</div>
+                </div>`).join("")
+            : '<div style="font-size:.78rem">No durable actions recorded for this case.</div>';
+        } catch (error) {
+          const trail = document.getElementById("actionTrail");
+          if (trail) trail.textContent = `Could not load the action trail: ${error.message}`;
+        }
+      }
+
+      // -------------------------------------------------------------- polling
+
+      async function refresh(options) {
+        const quiet = options && options.quiet;
+        if (state.inFlight) return false;
+        state.inFlight = true;
+        try {
+          const data = await requestJson("/overview");
+          state.cases = data.cases || [];
+          state.loaded = true;
+          clearError();
+          renderMetrics(data);
+          renderFilters();
+          renderTable();
+          renderDetail();
+          if (!data.simulation_enabled) {
+            $("raceDemo").disabled = true;
+            $("outreachDemo").disabled = true;
+            setStatus("Live Razorpay credentials configured — simulations disabled.");
+          } else if (!quiet) {
+            setStatus(`${state.cases.length} case${state.cases.length === 1 ? "" : "s"} loaded.`);
+          } else {
+            setStatus(`Updated ${new Date().toLocaleTimeString()}.`);
+          }
+          return true;
+        } catch (error) {
+          // lock() has already explained a 401 and asked for a token. Adding
+          // "Cannot reach the RailPulse API" on top of it would be wrong: the
+          // API is reachable, it is this tab that is not credentialed.
+          if (!error.unauthorized) {
+            showError(error.message);
+            setStatus("Reconnecting…", true);
+          }
+          return false;
+        } finally {
+          state.inFlight = false;
+        }
+      }
+
+      function schedule() {
+        clearInterval(state.timer);
+        if (!state.live) return;
+        state.timer = setInterval(() => {
+          if (document.hidden || state.locked) return;
+          refresh({ quiet: true });
+        }, POLL_MS);
+      }
+
+      function setLive(enabled) {
+        state.live = enabled;
+        $("liveDot").classList.toggle("live", enabled);
+        $("liveDot").classList.toggle("paused", !enabled);
+        if (enabled) {
+          refresh({ quiet: true });
+          setStatus("Live updates resumed.");
+        } else {
+          setStatus("Live updates paused.");
+        }
+        schedule();
+      }
+
+      // --------------------------------------------------------------- events
+
+      async function runAction(button, work) {
+        button.disabled = true;
+        try {
+          await work();
+          clearError();
+        } catch (error) {
+          showError(error.message);
+          setStatus(error.message, true);
+        } finally {
+          button.disabled = false;
+        }
+      }
+
+      $("raceDemo").addEventListener("click", (event) =>
+        runAction(event.currentTarget, async () => {
+          setStatus("Processing webhook race…");
+          const data = await requestJson("/demo/race-condition", { method: "POST" });
+          $("timeline").innerHTML = data.timeline
+            .map((step) => `<div>${escapeHtml(step)}</div>`).join("");
+          state.selectedId = data.case_id;
+          await refresh();
+          setStatus(`Case resolved safely without a duplicate collection.`);
+        }));
+
+      // One handler, two proposals. The policy validator is identical in both
+      // cases -- only what the drafting provider suggests differs -- which is
+      // the distinction the demo is meant to make visible.
+      const runOutreachDemo = (compliant) => async () => {
+          if (!$("aiToggle").checked) return;
+          const element = $("outreachPreview");
+          element.textContent = compliant
+            ? "Generating a structured draft and applying merchant policy…"
+            : "Asking the model for copy it should not be allowed to send…";
+          const data = await requestJson(
+            `/demo/outreach-preview?compliant=${compliant}`, { method: "POST" });
+          const preview = data.preview;
+          const checks = (preview.approved ? preview.policy_checks : preview.blocked_reasons)
+            .map((check) => `<span class="check ${preview.approved ? "" : "blocked"}">${escapeHtml(label(check))}</span>`)
+            .join("");
+          const body = preview.final_message || preview.message_body ||
+            "The draft did not pass structured output validation.";
+          element.innerHTML = `
+            <strong>${preview.approved ? "Approved preview — not sent" : "Blocked by policy"}</strong>
+            <div class="message">${escapeHtml(body)}</div>
+            <div class="check-list">${checks}</div>
+            <div class="status">Language: ${escapeHtml(preview.language)} · Tone: ${escapeHtml(preview.tone)} ·
+              Code appends the link only after approval.</div>`;
+          state.selectedId = data.case_id;
+          await refresh();
+          setStatus(preview.approved
+            ? "Preview generated; no message was sent."
+            : "Draft refused by policy. Nothing was sent, and the reasons are recorded.");
+      };
+
+      $("outreachDemo").addEventListener("click", (event) =>
+        runAction(event.currentTarget, runOutreachDemo(true)));
+      $("outreachBlockedDemo").addEventListener("click", (event) =>
+        runAction(event.currentTarget, runOutreachDemo(false)));
+
+      $("dispatchNow").addEventListener("click", (event) =>
+        runAction(event.currentTarget, async () => {
+          const data = await requestJson("/actions/dispatch", { method: "POST" });
+          await refresh();
+          setStatus(data.dispatched
+            ? `Dispatched ${data.dispatched} due action${data.dispatched === 1 ? "" : "s"}.`
+            : "No actions are due right now.");
+        }));
+
+      $("aiToggle").addEventListener("change", (event) => {
+        const enabled = event.target.checked;
+        $("outreachDemo").disabled = !enabled;
+        if (!enabled) {
+          $("outreachPreview").textContent =
+            "AI outreach previews are disabled. Recovery decisions remain deterministic.";
+        }
+      });
+
+      $("liveToggle").addEventListener("change", (event) => setLive(event.target.checked));
+
+      $("filters").addEventListener("click", (event) => {
+        const chip = event.target.closest("[data-filter]");
+        if (!chip) return;
+        state.filter = chip.dataset.filter;
+        renderFilters();
+        renderTable();
+      });
+
+      function selectRow(row) {
+        state.selectedId = state.selectedId === row.dataset.case ? null : row.dataset.case;
+        renderTable();
+        renderDetail();
+      }
+
+      $("caseRows").addEventListener("click", (event) => {
+        const row = event.target.closest("tr[data-case]");
+        if (row) selectRow(row);
+      });
+
+      $("caseRows").addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        const row = event.target.closest("tr[data-case]");
+        if (!row) return;
+        event.preventDefault();
+        selectRow(row);
+      });
+
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden && state.live && !state.locked) refresh({ quiet: true });
+      });
+
+      $("unlockForm").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const supplied = $("operatorToken").value.trim();
+        if (!supplied) return;
+        state.operatorToken = supplied;
+        setStatus("Checking token…");
+        if (await refresh()) {
+          unlock();
+          schedule();
+        }
+      });
+
+      // ----------------------------------------------------------------- boot
+
+      $("caseRows").innerHTML = Array.from({ length: 3 })
+        .map(() => `<tr><td colspan="6"><div class="skeleton"></div></td></tr>`).join("");
+      $("empty").style.display = "none";
+      renderFilters();
+
+      // Ask whether the guard is on before the first data call, so an operator
+      // running with RAILPULSE_OPERATOR_TOKEN set gets a prompt instead of a
+      // page where every panel has failed for no stated reason.
+      (async () => {
+        try {
+          const health = await requestJson("/health");
+          if (health && health.operator_auth === "required") {
+            lock("This instance requires an operator token.");
+            return;
+          }
+        } catch (_) {
+          // /health is unguarded, so a failure here means the API is down.
+          // refresh() reports that in the usual way.
+        }
+        await refresh();
+        schedule();
+      })();
+    </script>
+  </body>
+</html>
