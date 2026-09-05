@@ -20,6 +20,12 @@ baseline a merchant actually runs today:
 python -m app.sim.report    # reproduces every number below in ~30s, no API key
 ```
 
+![RailPulse architecture](docs/architecture.svg)
+
+*A model says what happened. Deterministic code decides what to do about it, and makes
+every call. Two model surfaces, each behind a gate; everything that moves money is a
+state machine.*
+
 Now the part that decides whether any of that means anything.
 
 ## What it claims, and what it doesn't
