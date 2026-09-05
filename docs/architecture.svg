@@ -1,0 +1,197 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 880" width="1280" height="880" font-family="Arial, Helvetica, sans-serif">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a1bf"/>
+    </marker>
+    <marker id="arm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#77e2bb"/>
+    </marker>
+    <marker id="ara" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#f7c55d"/>
+    </marker>
+  </defs>
+
+  <rect width="1280" height="880" fill="#070b17"/>
+
+  <!-- ============ title ============ -->
+  <text x="44" y="44" fill="#eaf0ff" font-size="25" font-weight="700" letter-spacing="-0.5">RailPulse — where the model is allowed to be</text>
+  <text x="44" y="70" fill="#94a1bf" font-size="13.5">Two places a model runs. Two gates it must pass. Everything that moves money is a state machine.</text>
+
+  <!-- legend -->
+  <rect x="902" y="26" width="26" height="15" rx="3" fill="#78a7ff" fill-opacity="0.10" stroke="#78a7ff" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <text x="938" y="38" fill="#94a1bf" font-size="11.5">a model may influence this</text>
+  <rect x="902" y="52" width="26" height="15" rx="3" fill="#101a31" stroke="#77e2bb" stroke-width="1.6"/>
+  <text x="938" y="64" fill="#94a1bf" font-size="11.5">deterministic — owns the money</text>
+
+  <!-- ============ band labels ============ -->
+  <text x="44"  y="112" fill="#6e7c9c" font-size="10" font-weight="600" letter-spacing="2.2" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">INGEST</text>
+  <text x="294" y="112" fill="#6e7c9c" font-size="10" font-weight="600" letter-spacing="2.2" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">CLASSIFY</text>
+  <text x="754" y="112" fill="#6e7c9c" font-size="10" font-weight="600" letter-spacing="2.2" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">DECIDE &amp; ACT</text>
+
+  <!-- ============ COL 1 — ingest ============ -->
+  <rect x="44" y="124" width="210" height="176" rx="9" fill="#101a31" stroke="#26334f"/>
+  <text x="62" y="152" fill="#eaf0ff" font-size="14" font-weight="700">Razorpay webhooks</text>
+  <text x="62" y="176" fill="#94a1bf" font-size="11">payment.failed · authorized</text>
+  <text x="62" y="192" fill="#94a1bf" font-size="11">link.paid · dispute.created</text>
+  <text x="62" y="208" fill="#94a1bf" font-size="11">refund.processed · halted</text>
+  <line x1="62" y1="226" x2="236" y2="226" stroke="#26334f"/>
+  <text x="62" y="250" fill="#77e2bb" font-size="11" font-weight="600" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">HMAC verified · fails closed</text>
+  <text x="62" y="270" fill="#6e7c9c" font-size="10.5">Unsigned events are refused</text>
+  <text x="62" y="285" fill="#6e7c9c" font-size="10.5">unless a flag says so out loud.</text>
+
+  <line x1="254" y1="212" x2="288" y2="212" stroke="#94a1bf" stroke-width="1.5" marker-end="url(#ar)"/>
+
+  <!-- measured-claim panel -->
+  <rect x="44" y="324" width="210" height="282" rx="9" fill="#0c1428" stroke="#26334f"/>
+  <text x="62" y="350" fill="#6e7c9c" font-size="9.5" font-weight="700" letter-spacing="1.8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">MEASURED, NOT ASSERTED</text>
+  <text x="62" y="374" fill="#78a7ff" font-size="10.5" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">python -m app.sim.report</text>
+  <text x="62" y="394" fill="#6e7c9c" font-size="10">12 seeds × 500 failed payments,</text>
+  <text x="62" y="409" fill="#6e7c9c" font-size="10">reproducible in ~30s, no API key.</text>
+  <line x1="62" y1="424" x2="236" y2="424" stroke="#26334f"/>
+
+  <text x="62" y="448" fill="#77e2bb" font-size="17" font-weight="700">+₹66,409</text>
+  <text x="62" y="465" fill="#94a1bf" font-size="10">net vs static dunning, per 500.</text>
+  <text x="62" y="480" fill="#94a1bf" font-size="10">Won 12 of 12 worlds.</text>
+
+  <text x="62" y="506" fill="#77e2bb" font-size="17" font-weight="700">0<tspan fill="#94a1bf" font-size="11" font-weight="400"> opt-outs, vs its 217</tspan></text>
+  <text x="62" y="523" fill="#94a1bf" font-size="10">out of 500 customers burned.</text>
+  <line x1="62" y1="538" x2="236" y2="538" stroke="#26334f"/>
+
+  <text x="62" y="560" fill="#f7c55d" font-size="10.5" font-weight="600">Take the classifier out and</text>
+  <text x="62" y="575" fill="#f7c55d" font-size="10.5" font-weight="600">RailPulse loses to plain retry.</text>
+  <text x="62" y="592" fill="#6e7c9c" font-size="10">That row is left in the table.</text>
+
+  <!-- ============ COL 2 — classify ============ -->
+  <rect x="294" y="124" width="420" height="482" rx="10" fill="#0c1428" stroke="#26334f"/>
+
+  <rect x="312" y="146" width="384" height="58" rx="7" fill="#101a31" stroke="#26334f"/>
+  <text x="328" y="170" fill="#eaf0ff" font-size="13" font-weight="700">1 · Lookup table</text>
+  <text x="328" y="189" fill="#94a1bf" font-size="10.5">Known code → canonical. Free, auditable, can't hallucinate.</text>
+
+  <text x="330" y="222" fill="#6e7c9c" font-size="9.5" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">miss ↓</text>
+
+  <rect x="312" y="230" width="384" height="48" rx="7" fill="#101a31" stroke="#26334f"/>
+  <text x="328" y="252" fill="#eaf0ff" font-size="13" font-weight="700">2 · Cache</text>
+  <text x="328" y="270" fill="#94a1bf" font-size="10.5">This (code, message) pair already answered once.</text>
+
+  <text x="330" y="296" fill="#6e7c9c" font-size="9.5" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">miss ↓</text>
+
+  <rect x="312" y="304" width="384" height="94" rx="7" fill="#78a7ff" fill-opacity="0.09" stroke="#78a7ff" stroke-width="1.4" stroke-dasharray="5 4"/>
+  <text x="328" y="328" fill="#78a7ff" font-size="13" font-weight="700">3 · MODEL</text>
+  <text x="620" y="328" fill="#78a7ff" font-size="9.5" font-weight="600" letter-spacing="1.4" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end">UNTRUSTED</text>
+  <text x="328" y="348" fill="#c3cee6" font-size="10.5">Forced tool call / strict JSON schema. Reached only for prose.</text>
+  <text x="328" y="366" fill="#c3cee6" font-size="10.5">Returns one of 10 codes, a confidence, and a rationale.</text>
+  <text x="328" y="386" fill="#6e7c9c" font-size="10.5">That is the entire space of things it is able to say.</text>
+
+  <line x1="504" y1="398" x2="504" y2="424" stroke="#77e2bb" stroke-width="1.5" marker-end="url(#arm)"/>
+
+  <rect x="312" y="426" width="384" height="80" rx="7" fill="#101a31" stroke="#77e2bb" stroke-width="1.6"/>
+  <text x="328" y="450" fill="#77e2bb" font-size="12" font-weight="700" letter-spacing="1.6" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">GATE</text>
+  <text x="328" y="470" fill="#eaf0ff" font-size="11.5">Is the code in the enum?   ·   Is confidence ≥ 0.60?</text>
+  <text x="328" y="490" fill="#94a1bf" font-size="10.5">A provider error returns "unknown now" — never cached as a verdict.</text>
+
+  <path d="M 400 506 L 400 536" stroke="#f7c55d" stroke-width="1.5" fill="none" marker-end="url(#ara)"/>
+  <text x="410" y="526" fill="#f7c55d" font-size="10" font-weight="600" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">no</text>
+
+  <rect x="312" y="538" width="248" height="52" rx="7" fill="#101a31" stroke="#f7c55d" stroke-width="1.3"/>
+  <text x="328" y="560" fill="#f7c55d" font-size="11.5" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">MANUAL_REVIEW</text>
+  <text x="328" y="578" fill="#94a1bf" font-size="10.5">A human decides. Audited reopen only.</text>
+
+  <path d="M 696 466 L 754 466" stroke="#77e2bb" stroke-width="1.8" fill="none" marker-end="url(#arm)"/>
+  <text x="700" y="456" fill="#77e2bb" font-size="10" font-weight="600" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">yes</text>
+
+  <!-- ============ COL 3 — engine ============ -->
+  <rect x="754" y="124" width="482" height="482" rx="10" fill="#101a31" stroke="#77e2bb" stroke-width="1.6"/>
+  <text x="772" y="150" fill="#77e2bb" font-size="10" font-weight="700" letter-spacing="2.2" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">DETERMINISTIC ENGINE</text>
+  <text x="772" y="176" fill="#eaf0ff" font-size="15" font-weight="700">Every rupee is decided here.</text>
+  <text x="772" y="196" fill="#94a1bf" font-size="10.5">Nothing crosses into this region except one member of a closed enum.</text>
+  <line x1="772" y1="212" x2="1218" y2="212" stroke="#26334f"/>
+
+  <text x="772" y="234" fill="#6e7c9c" font-size="9.5" font-weight="600" letter-spacing="1.6" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">12-STATE MACHINE</text>
+
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="8.5">
+    <rect x="772"  y="244" width="140" height="21" rx="4" fill="#0c1428" stroke="#26334f"/><text x="842"  y="258" fill="#c3cee6" text-anchor="middle">OPEN</text>
+    <rect x="920"  y="244" width="140" height="21" rx="4" fill="#0c1428" stroke="#26334f"/><text x="990"  y="258" fill="#c3cee6" text-anchor="middle">CLASSIFIED</text>
+    <rect x="1068" y="244" width="140" height="21" rx="4" fill="#0c1428" stroke="#26334f"/><text x="1138" y="258" fill="#c3cee6" text-anchor="middle">COOLDOWN</text>
+
+    <rect x="772"  y="271" width="140" height="21" rx="4" fill="#0c1428" stroke="#26334f"/><text x="842"  y="285" fill="#c3cee6" text-anchor="middle">RETRY_SCHEDULED</text>
+    <rect x="920"  y="271" width="140" height="21" rx="4" fill="#0c1428" stroke="#26334f"/><text x="990"  y="285" fill="#c3cee6" text-anchor="middle">CONSENT_REQUIRED</text>
+    <rect x="1068" y="271" width="140" height="21" rx="4" fill="#0c1428" stroke="#26334f"/><text x="1138" y="285" fill="#c3cee6" text-anchor="middle">LINK_SENT</text>
+
+    <rect x="772"  y="298" width="140" height="21" rx="4" fill="#0c1428" stroke="#26334f"/><text x="842"  y="312" fill="#c3cee6" text-anchor="middle">AUTHORIZED_PENDING</text>
+    <rect x="920"  y="298" width="140" height="21" rx="4" fill="#2c2413" stroke="#826729"/><text x="990"  y="312" fill="#f7c55d" text-anchor="middle">MANUAL_REVIEW</text>
+    <rect x="1068" y="298" width="140" height="21" rx="4" fill="#0f2b26" stroke="#2f6d58"/><text x="1138" y="312" fill="#77e2bb" text-anchor="middle">RECOVERED_NATURAL</text>
+
+    <rect x="772"  y="325" width="140" height="21" rx="4" fill="#0f2b26" stroke="#2f6d58"/><text x="842"  y="339" fill="#77e2bb" text-anchor="middle">RECOVERED_BY_LINK</text>
+    <rect x="920"  y="325" width="140" height="21" rx="4" fill="#2b1622" stroke="#6d2f3c"/><text x="990"  y="339" fill="#ff8c9f" text-anchor="middle">STOPPED</text>
+    <rect x="1068" y="325" width="140" height="21" rx="4" fill="#2b1622" stroke="#6d2f3c"/><text x="1138" y="339" fill="#ff8c9f" text-anchor="middle">RECOVERY_REVERSED</text>
+  </g>
+  <text x="772" y="364" fill="#6e7c9c" font-size="9.2">STOPPED is terminal. MANUAL_REVIEW reopens only through audit. RECOVERY_REVERSED removes recovered money.</text>
+
+  <line x1="772" y1="379" x2="1218" y2="379" stroke="#26334f"/>
+  <text x="772" y="400" fill="#6e7c9c" font-size="9.5" font-weight="600" letter-spacing="1.6" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">GATES BEFORE ANY ACTION</text>
+
+  <g font-size="11.5">
+    <circle cx="777" cy="418" r="2.6" fill="#77e2bb"/>
+    <text x="790" y="422" fill="#eaf0ff" font-weight="600">Rail health</text>
+    <text x="884" y="422" fill="#94a1bf" font-size="10.5">no release into an issuer still observed degraded</text>
+
+    <circle cx="777" cy="442" r="2.6" fill="#77e2bb"/>
+    <text x="790" y="446" fill="#eaf0ff" font-weight="600">Jitter + quota</text>
+    <text x="884" y="446" fill="#94a1bf" font-size="10.5">a rail that recovers doesn't get a synchronised burst</text>
+
+    <circle cx="777" cy="466" r="2.6" fill="#77e2bb"/>
+    <text x="790" y="470" fill="#eaf0ff" font-weight="600">Contact budget</text>
+    <text x="884" y="470" fill="#94a1bf" font-size="10.5">2 per 7 days per <tspan font-style="italic">customer</tspan>, opt-out is permanent</text>
+
+    <circle cx="777" cy="490" r="2.6" fill="#77e2bb"/>
+    <text x="790" y="494" fill="#eaf0ff" font-weight="600">Action ledger</text>
+    <text x="884" y="494" fill="#94a1bf" font-size="10.5">intent claimed under a unique key before the call</text>
+
+    <circle cx="777" cy="514" r="2.6" fill="#77e2bb"/>
+    <text x="790" y="518" fill="#eaf0ff" font-weight="600">No I/O in a txn</text>
+    <text x="884" y="518" fill="#94a1bf" font-size="10.5">a hanging provider delays one case, not the queue</text>
+  </g>
+
+  <rect x="772" y="534" width="446" height="54" rx="7" fill="#0c1428" stroke="#26334f"/>
+  <text x="790" y="556" fill="#78a7ff" font-size="12.5" font-weight="700">→ Razorpay API &#160;<tspan fill="#6e7c9c" font-size="10" font-weight="400">test mode</tspan></text>
+  <text x="790" y="573" fill="#94a1bf" font-size="10.5">retry · create consented payment link · cancel link · capture</text>
+  <text x="790" y="584" fill="#6e7c9c" font-size="9.7">A method switch is a link the customer completes — never a silent re-charge.</text>
+
+  <!-- ============ OUTREACH BAND ============ -->
+  <rect x="44" y="636" width="1192" height="154" rx="10" fill="#0c1428" stroke="#26334f"/>
+  <text x="64" y="664" fill="#eaf0ff" font-size="13.5" font-weight="700">OUTREACH — the second and last place a model runs</text>
+  <text x="64" y="684" fill="#94a1bf" font-size="10.5">The guarantee here is structural, not instructional: a jailbreak has nowhere to put a payload.</text>
+
+  <rect x="64" y="700" width="180" height="74" rx="7" fill="#101a31" stroke="#26334f"/>
+  <text x="80" y="724" fill="#eaf0ff" font-size="11.5" font-weight="600">Case needs contact</text>
+  <text x="80" y="742" fill="#94a1bf" font-size="10">amount · issuer · rail</text>
+  <text x="80" y="758" fill="#94a1bf" font-size="10">contact history</text>
+
+  <line x1="252" y1="737" x2="286" y2="737" stroke="#94a1bf" stroke-width="1.5" marker-end="url(#ar)"/>
+
+  <rect x="294" y="700" width="300" height="74" rx="7" fill="#78a7ff" fill-opacity="0.09" stroke="#78a7ff" stroke-width="1.4" stroke-dasharray="5 4"/>
+  <text x="312" y="724" fill="#78a7ff" font-size="12" font-weight="700">MODEL · draft</text>
+  <text x="312" y="742" fill="#c3cee6" font-size="10">Three fields: language, tone, message body.</text>
+  <text x="312" y="760" fill="#77e2bb" font-size="10">No URL field. No amount field.</text>
+
+  <line x1="602" y1="737" x2="626" y2="737" stroke="#77e2bb" stroke-width="1.6" marker-end="url(#arm)"/>
+
+  <rect x="634" y="700" width="330" height="74" rx="7" fill="#101a31" stroke="#77e2bb" stroke-width="1.6"/>
+  <text x="652" y="724" fill="#77e2bb" font-size="12" font-weight="700" letter-spacing="1.2" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">GATE · 3 VALIDATORS</text>
+  <text x="652" y="742" fill="#eaf0ff" font-size="10.5">no model-supplied URL  ·  no invented discount</text>
+  <text x="652" y="760" fill="#eaf0ff" font-size="10.5">no coercive dunning language</text>
+
+  <line x1="972" y1="737" x2="996" y2="737" stroke="#94a1bf" stroke-width="1.5" marker-end="url(#ar)"/>
+
+  <rect x="1004" y="700" width="232" height="74" rx="7" fill="#101a31" stroke="#26334f"/>
+  <text x="1020" y="724" fill="#eaf0ff" font-size="12" font-weight="700">PREVIEW ONLY</text>
+  <text x="1020" y="742" fill="#94a1bf" font-size="10">The canonical link is appended by code.</text>
+  <text x="1020" y="760" fill="#f7c55d" font-size="10">Delivery is off in every path.</text>
+
+  <!-- ============ AUDIT RAIL ============ -->
+  <line x1="44" y1="812" x2="1236" y2="812" stroke="#26334f"/>
+  <text x="44" y="840" fill="#6e7c9c" font-size="10" font-weight="700" letter-spacing="2.2" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">AUDIT</text>
+  <text x="112" y="840" fill="#94a1bf" font-size="11.5">Every classification records the input, the model's answer, its confidence, and whether policy accepted it — a rejected answer is as visible as an accepted one.</text>
+  <text x="112" y="860" fill="#6e7c9c" font-size="11">Six guards tested in <tspan font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#94a1bf">tests/test_classifier.py</tspan>; the jailbreak refusal in <tspan font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#94a1bf">tests/test_draft_provider.py</tspan>. 262 tests, CI on every push.</text>
+</svg>
