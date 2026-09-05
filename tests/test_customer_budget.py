@@ -139,6 +139,45 @@ class CustomerBudgetTests(unittest.TestCase):
         self.assertIsNone(case.payment_link_id, "contacted a customer who had disputed")
         self.assertEqual(case.state, RecoveryCaseState.STOPPED)
 
+    def test_a_spent_budget_parks_for_a_human_rather_than_stopping_forever(self) -> None:
+        """A budget refusal is temporary. It must not be a one-way door.
+
+        Every contact refusal used to land in STOPPED, which is terminal and
+        which ``reopen`` deliberately refuses. That is right for an opt-out -- a
+        decision the customer made -- and wrong for a budget that refills in
+        seven days, because it silently abandoned recoverable invoices for
+        anyone who happened to have a busy week. The same one-way-door bug
+        already fixed for the classifier-outage path.
+        """
+        for index in range(3):
+            self.service.ingest(failure(index))
+            self.service.dispatch_due_actions(NOW + timedelta(days=index * 3))
+
+        third = self.store.get_case("inv_2")
+        self.assertEqual(third.state, RecoveryCaseState.MANUAL_REVIEW)
+        self.assertEqual(third.stop_reason, "contact_budget_exhausted")
+
+        # And the door out is real: an operator can put it back in the machine.
+        reopened = self.service.reopen(
+            third.id, NOW + timedelta(days=30), note="budget window has refilled"
+        )
+        self.assertNotEqual(reopened.state, RecoveryCaseState.MANUAL_REVIEW)
+
+    def test_an_opt_out_still_stops_permanently(self) -> None:
+        """The distinction has to cut both ways, or the guarantee is gone."""
+        self.service.ingest(failure(0))
+        self.service.dispatch_due_actions(NOW)
+        case = self.store.get_case("inv_0")
+        case.attention.opted_out = True
+        self.store.save_case(case, case.version)
+
+        self.service.ingest(failure(1))
+        self.service.dispatch_due_actions(NOW + timedelta(hours=2))
+        second = self.store.get_case("inv_1")
+        self.assertEqual(second.state, RecoveryCaseState.STOPPED)
+        with self.assertRaises(ValueError):
+            self.service.reopen(second.id, NOW + timedelta(days=30), note="nope")
+
     def test_events_without_a_customer_still_work(self) -> None:
         """Not every payload carries a customer. Falling back to per-case
         behaviour is correct; failing open or blocking everything is not."""

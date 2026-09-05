@@ -218,13 +218,37 @@ class RecoveryService:
             else:
                 allowed, blocked_reason = self._may_contact(snapshot, now)
                 if not allowed:
-                    target, reason = RecoveryCaseState.STOPPED, blocked_reason or "contact_not_permitted"
+                    target, reason = self._contact_refusal_state(blocked_reason)
                     next_action_at = None
                 else:
                     target, reason = RecoveryCaseState.CONSENT_REQUIRED, "retry_window_elapsed"
                     next_action_at = None
 
         return self._commit_state(snapshot, target, reason, next_action_at, now)
+
+    #: Reasons ``_may_contact`` can refuse that are *temporary*. The budget is a
+    #: rolling 7-day window and the cooldown is 24 hours, so both heal on their
+    #: own -- unlike an opt-out, which is a decision the customer made.
+    _TRANSIENT_CONTACT_REFUSALS = frozenset({"contact_budget_exhausted", "contact_cooldown_active"})
+
+    def _contact_refusal_state(self, reason: str | None) -> tuple[RecoveryCaseState, str]:
+        """Where a case goes when the contact budget says no.
+
+        Every refusal used to land in ``STOPPED``, which is terminal and which
+        ``reopen`` deliberately refuses. That is right for an opt-out, a risk
+        decision and a dispute -- all permanent, and an endpoint that could
+        reverse them would be a way to resume contacting someone who said stop.
+
+        It is wrong for the other two. A budget that refills in seven days and a
+        cooldown that expires in twenty-four hours are exactly the transient
+        reasons ``reopen`` exists for, and sending them to a terminal state
+        silently abandoned recoverable invoices because a customer had a busy
+        week. Same one-way-door bug already fixed for the classifier-outage
+        path, in a place nobody had looked.
+        """
+        if reason in self._TRANSIENT_CONTACT_REFUSALS:
+            return RecoveryCaseState.MANUAL_REVIEW, reason
+        return RecoveryCaseState.STOPPED, reason or "contact_not_permitted"
 
     def _may_contact(self, case: RecoveryCase, now: datetime) -> tuple[bool, str | None]:
         """Budget and opt-out across the whole customer, not one invoice.
@@ -302,7 +326,11 @@ class RecoveryService:
                     return None
                 latest.transition_to(target)
                 latest.next_action_at = next_action_at
-                latest.stop_reason = reason if target == RecoveryCaseState.STOPPED else latest.stop_reason
+                # Record why on both terminal-ish states. MANUAL_REVIEW means a
+                # human picks this up, and "manual_review" with no reason tells
+                # them nothing -- the create-failure path above already sets it.
+                if target in (RecoveryCaseState.STOPPED, RecoveryCaseState.MANUAL_REVIEW):
+                    latest.stop_reason = reason
                 latest.updated_at = now
                 self.store.save_case(latest, latest.version)
                 return latest
@@ -313,9 +341,8 @@ class RecoveryService:
     def _create_recovery_link(self, snapshot: RecoveryCase, now: datetime) -> RecoveryCase | None:
         allowed, reason = self._may_contact(snapshot, now)
         if not allowed:
-            return self._commit_state(
-                snapshot, RecoveryCaseState.STOPPED, reason or "contact_not_permitted", None, now
-            )
+            target, stop_reason = self._contact_refusal_state(reason)
+            return self._commit_state(snapshot, target, stop_reason, None, now)
 
         # The unique action key is the app-level protection against a second
         # recovery link for the same invoice and policy revision.

@@ -583,6 +583,25 @@ and verified in a real browser rather than by reading the code: the prompt
 appears, a wrong token re-prompts without wedging the page, the right one loads
 the data.
 
+**A one-way door I found by testing my own README.** Writing a script that
+re-derives each guarantee this page claims turned up one it did not claim, and
+should not have allowed. `_may_contact` refuses for three reasons; all three
+transitioned the case to `STOPPED`, which is terminal and which `reopen`
+deliberately refuses. That is correct for an opt-out -- a decision the customer
+made, and an endpoint that could reverse it would be a way to resume contacting
+someone who said stop. It is wrong for the other two: a budget that refills in
+seven days and a cooldown that expires in twenty-four hours are exactly the
+transient reasons `reopen` exists for. A recoverable invoice was being abandoned
+permanently, and silently, because a customer had a busy week.
+
+It is the same one-way-door bug already fixed above for the classifier-outage
+path, in a place I had not looked. Transient refusals now park in
+`MANUAL_REVIEW` with the reason recorded, so an operator can see why and put the
+case back; opt-outs still stop permanently and `reopen` still refuses them.
+Both halves are asserted in `tests/test_customer_budget.py`. Every figure on
+this page is unchanged -- the fix moves where a refused case waits, not what any
+policy recovers.
+
 ## What I would do next
 
 - Run the classifier against real anonymised acquirer *traffic*. Scoring
